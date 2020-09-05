@@ -1,17 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>D3: Loading data from a CSV file</title>
-		<script type="text/javascript" src="../d3.js"></script>
-	</head>
-	<body>
-		<script type="text/javascript">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Page Template</title>
+    <script type="text/javascript" src="../d3.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+     let dataset;
+     d3.csv("food.csv")
+       .then(function(data) {
+	 // the csv function parse the numerical values into strings by default, so here we map them back into int and float values.
+	 data = data.map(d => {return {Food: d.Food, Deliciousness: parseFloat(d.Deliciousness)}}); // what is inside the map function is an anonymous function that convert the properties.
+	 dataset = data;
+	 console.log(data);
+	 // other operations manipulated on the data like plotting also goes here.
+       })
+       .catch(function(error) {
+	 console.log("There is some error when loading the data");
+       });
+     
+     // This way, we can make the dataset still avaible for furture use.
+     // The reason why I wrap it in setTimeout is because when d3.csv is still loading the data, the following code will already run, without setTimeout, dataset is not loaded yet...
+     console.log("Without the time out, the dataset is not loaded, thus it will return undefined: \n" + dataset);
+     
+     setTimeout(()=>{
+       console.log("With the timeout, the dataset is loaded and still accessible");
+       console.log(dataset);
+     }, 1000);
+    </script>
+    <h3> Important Note </h3>
+    <p>There is a change here, the following code will return 6 separate object, not in an array.</p>
+    <pre><code>
+    d3.csv("food.csv", function(data) {
+        console.log(data);
+    });
+    </code></pre>
 
-			d3.csv("food.csv", function(data) {
-				console.log(data);
-			});
+    <p>Because <a href="https://github.com/d3/d3/blob/master/CHANGES.md#changes-in-d3-50">the csv function have changed since version 5.0</a> and began to using a <a href="https://observablehq.com/@observablehq/introduction-to-promises">promise</a> instead of asynchronous callbacks. We could change the code to:</p>
+    <pre><code>
+    d3.csv("food.csv")	
+    .then(function(data) {	
+        console.log(data);		
+    })		
+    .catch(function(error) {		
+        console.log("There is some error when loading the data");		
+    });
+    </code></pre>
+    <p>Other data loading methods are also changed, such as d3.json() and d3.text()...</p>
 
-		</script>
-	</body>
+    Reference: <a href="https://stackoverflow.com/questions/49599691/how-to-load-data-from-a-csv-file-in-d3-v5">https://stackoverflow.com/questions/49599691/how-to-load-data-from-a-csv-file-in-d3-v5</a>
+
+  </body>
 </html>
