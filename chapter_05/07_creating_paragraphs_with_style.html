@@ -1,24 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>D3: Setting the style of paragraphs</title>
-		<script type="text/javascript" src="../d3.js"></script>
-	</head>
-	<body>
-		<script type="text/javascript">
-		
-			var dataset = [ 5, 10, 15, 20, 25 ];
-			
-			d3.select("body").selectAll("p")
-				.data(dataset)
-				.enter()
-				.append("p")
-				.text(function(d) {
-					return "I can count up to " + d;
-				})
-				.style("color", "red");
-			
-		</script>
-	</body>
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Page Template</title>
+    <script type="text/javascript" src="../d3.js"></script>
+  </head>
+  <body>
+    <p>This is a paragraph</p>
+    <script type="text/javascript">
+     let dataset = [5, 10, 15, 20 ,25];
+     d3.select("body").
+	selectAll("p").
+	data(dataset).
+	enter(). // if the reference that is passed to it is not empty, then the following code is not executed. but the data is still binded to the existing <p>
+	append("p").
+	text(da => {return "This one is with the data: " + da}).
+	style("color", d => {return "rgba(0," + d * 10  + "," + " 0," +  d / 25 + ")";});
+    </script>
+  </body>
 </html>
