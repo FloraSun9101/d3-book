@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 scaling practice</title>
+    <script type="text/javascript" src="../d3.js"></script>
+    <style type="text/css">
+     
+    </style>
+  </head>
+  <body>
+    <p>d3.schemeCategory20 is no longer provided since V5. </p>
+    <script type="text/javascript">
+
+     d3.select("body").append("h3").text("Make the plot adapt to the canvas size");
+     let svg = d3.select("body").append("svg");
+     let h = 400;
+     let w = 600;
+     let margin = {top: 20, right: 100, bottom: 20, left: 20};           // to deal with the cut-off issue, add margin to the svg manually. https://observablehq.com/@d3/margin-convention
+
+     let dataS = [[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+                  [410, 12], [475, 44], [25, 67], [85, 21], [220, 88], [600, 150]];
+     let maxXDomain = d3.max(dataS, (d) => {return d[0];});              // d3.max(iterable [, accessor]) detail: https://github.com/d3/d3-array/blob/v2.7.1/README.md#max
+     let minXDomain = 0;
+     let maxYDomain = d3.max(dataS, (d) => {return d[1];});
+     let minYDomain = 0;
+
+     let XScale = d3.scaleLinear()
+		    .domain([minXDomain, maxXDomain])
+		    .range([margin.left, w - margin.right])
+		    .nice();                                             // Extends the domain so that it starts and ends on nice round values.
+     let YScale = d3.scaleLinear()
+		    .domain([minYDomain, maxYDomain])
+		    .range([h - margin.top, margin.bottom])              // notice that here we put h as the first parameter, so we do not need to plot y at (h - d[1]) anymore
+		    .nice();
+     let RScale = d3.scaleSqrt()
+		    .domain([minYDomain, maxYDomain])
+		    .range([0, 10])
+		    .nice()                                              // Extends the domain so that it starts and ends on nice round values. change the domain from [0, 12.24744871391589] to [0, 13].
+     // Could be verified by "RScale.domain()" in the console
+		    .rangeRound([0, 10]);                                  // round the radius to nearest integer -> exact how many pixels.
+     // another useful function called scale.clamp() can cut all input that exceed the domain to the low or high bounds to avoid future bugs.
+     
+     svg.attr("width", w)
+	.attr("height", h)
+	.style("display", "block");
+     
+     // plot the scatter
+     svg.selectAll("circle")
+	.data(dataS)
+	.enter()
+	.append("circle")
+	.attr("cx", (d) => {return XScale(d[0]);})
+	.attr("cy", (d) => {return YScale(d[1]);})
+	.attr("r", (d) => {return RScale(d[1]);});
+     
+     // add labels
+     svg.selectAll("text")
+	.data(dataS)
+	.enter()
+	.append("text")
+	.text(d => {return "(" + d[0] + ", " + d[1] + ")";})
+	.attr("x", (d) => {return XScale(d[0]) + 0.5 * RScale(d[1]) + 5;})
+	.attr("y", (d) => {return YScale(d[1]) + 5;})
+	.attr("fill", "teal");
+
+     // Show the schemeCategory10 colors ------------------------------------------------------
+     d3.select("body").append("h3").text("Show the schemeCategory10 colors");
+     let svg2 = d3.select("body").append("svg");
+     svg2.attr("width", 200).attr("height", 100);
+     svg2.selectAll("rect")
+	 .data([1,2,3,4,5,6,7,8,9,10])
+	 .enter()
+	 .append("rect")
+	 .attr("x", (d, i) => {return i * 20;})
+	 .attr("y", 0)
+	 .attr("width", 19)
+	 .attr("height", 100)
+	 .attr("fill", (d,i) => {return d3.schemeCategory10[i];});
+
+     // Example of scaleSqrt ------------------------------------------------------------------
+     // So the scaleSqrt first compute the square root of the data, and
+     // then Map it from [sqrt(FirstParaDomain), sqrt(SecondParaDomain)] to [FirstParaRange, SecondParaDomain].
+
+     d3.select("body").append("h3").text("Example of scaleSqrt()");
+     let dataScaleSqrt = [];
+     for (let i = 1; i < 16; i++) {
+       dataScaleSqrt.push(i ** 2);
+     }
+
+     let svg3 = d3.select("body").append("svg");
+     svg3.attr("width", 140).attr("height", 225).style("display", "block");
+     svg3.selectAll("circle")
+	 .data(dataScaleSqrt)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d, i) => {return i * 10;})
+	 .attr("cy", d => {return 225 - d;})
+	 .attr("r", 3);
+
+     // scale test (1) ---------------------- sqrt is operated.
+     let minDDomain = d3.min(dataScaleSqrt);
+     let maxDDomain = d3.max(dataScaleSqrt);
+     let sqrtScale = d3.scaleSqrt()
+		       .domain([minDDomain, maxDDomain])
+		       .range([15, 1]);
+
+     let svg4 = d3.select("body").append("svg");
+     svg4.attr("width", 140).attr("height", 150).style("display", "block");
+     svg4.selectAll("circle")
+	 .data(dataScaleSqrt)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d, i) => {return i * 10;})
+	 .attr("cy", d => {return sqrtScale(d) * 10;})
+	 .attr("r", 3);
+
+     // scale test (2) ---------------------- after the sqrt, the result [1, 2, ..., 15] is mapped from [sqrt(1), sqrt(225)] to [30, 2]
+     let sqrtScale2 = d3.scaleSqrt()
+			.domain([minDDomain, maxDDomain])
+			.range([30, 2]);
+
+     let svg5 = d3.select("body").append("svg");
+     svg5.attr("width", 140).attr("height", 300).style("display", "block");
+     svg5.selectAll("circle")
+	 .data(dataScaleSqrt)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d, i) => {return i * 10;})
+	 .attr("cy", d => {return sqrtScale2(d) * 10;})
+	 .attr("r", 3);
+
+     // scale test (3) ---------------------- The sqrt-ed result is mapped from [sqrt(1), sqrt(900)] to [30, 1]
+     let sqrtScale3 = d3.scaleSqrt()
+			.domain([minDDomain, 900])
+			.range([30, 1]);
+
+     let svg6 = d3.select("body").append("svg");
+     svg6.attr("width", 140).attr("height", 300).style("display", "block");
+     svg6.selectAll("circle")
+	 .data(dataScaleSqrt)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d, i) => {return i * 10;})
+	 .attr("cy", d => {return sqrtScale3(d) * 10;})
+	 .attr("r", 3);
+
+     // scale time practice ---------------------------------------------------------
+     d3.select("body").append("h3").text("scale of time practice");
+
+     let parseTime = d3.timeParse("%m/%d/%y");
+     d3.csv("./time_scale_data.csv")
+       .then( (d) => {
+	 d = d.map(d => {return {Date: parseTime(d.Date),
+				 Amount: d.Amount};});
+
+	 let svg7 = d3.select("body").append("svg");
+	 let w7 = 700;
+	 let h7 = 400;
+	 let margin = {top: 20, right: 70, bottom: 20, left: 20};
+	 
+	 svg7.attr("width", w7)
+	     .attr("height", h7)
+	     .style("display", "block");
+	 
+	 // scale the time and amount
+	 let minDDomain = d3.min(d, (d) => {return d.Date;});
+	 let maxDDomain = d3.max(d, (d) => {return d.Date;});
+	 let minADomain = d3.min(d, (d) => {return d.Amount;});
+	 let maxADomain = d3.max(d, (d) => {return d.Amount;});
+
+	 let xScale = d3.scaleTime()
+			.domain([minDDomain, maxDDomain])
+			.range([margin.left, w7 - margin.right]);
+	 let yScale = d3.scaleTime()
+			.domain([minADomain, maxADomain])
+			.range([h7 - margin.top, margin.bottom]);
+	 
+	 let rainbowPalette = ["#ff0000", "#ffa500", "#ffff00", "#008000", "#0000ff", "#4b0082", "#ee82ee"];
+	 svg7.selectAll("circle")
+	     .data(d)
+	     .enter()
+	     .append("circle")
+	     .attr("cx", (d) => {return xScale(d.Date);})
+	     .attr("cy", (d) => {return yScale(d.Amount);})
+	     .attr("r", 4)
+	     .attr("opacity", 0.7)
+	     .attr("fill", (d) => {return rainbowPalette[(d.Date.getDay() + 6) % 7];});
+
+	 // add the label
+	 let time2Str = d3.timeFormat("%m/%d");
+	 svg7.selectAll("text")
+	     .data(d)
+	     .enter()
+	     .append("text")
+	     .attr("x", (d) => {return xScale(d.Date) + 6;})
+	     .attr("y", (d) => {return yScale(d.Amount) + 3;})
+	     .attr("fill", "gray")
+	     .attr("font-size", "10px")
+	     .text(d => {return time2Str(d.Date);});
+       })
+    </script>
+  </body>
+</html>
