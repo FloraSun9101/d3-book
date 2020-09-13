@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Axes Personal Practice</title>
+    <script type="text/javascript" src="../d3.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+     let dataset = [
+       [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+       [410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
+       [600, 150]
+     ]; 
+     
+     // set the canvas
+     let w1 = 700;
+     let h1 = 400;
+     let margin = {top: 20, right: 70, bottom: 20, left: 30};
+
+     let svg1 = d3.select("body").append("svg");
+     svg1.attr("width", w1)
+	 .attr("height", h1)
+	 .style("display", "block");
+
+     // scale the data
+     let minXDomain = d3.min(dataset, (d) => {return d[0]});
+     let maxXDomain = d3.max(dataset, (d) => {return d[0]});
+     let minYDomain = 0 // d3.min(dataset, (d) => {return d[1]});
+     let maxYDomain = d3.max(dataset, (d) => {return d[1]});
+     
+     let xScale = d3.scaleLinear()
+		    .domain([minXDomain, maxXDomain])
+		    .range([margin.left, w1 - margin.right])
+		    .nice();
+     let yScale = d3.scaleLinear()
+		    .domain([minYDomain, maxYDomain])
+		    .range([h1 - margin.top, margin.bottom])
+		    .nice();
+     let rScale = d3.scaleSqrt()
+		    .domain([minYDomain, maxYDomain])
+		    .rangeRound([2, 7]);
+
+     // plot the scatter
+     svg1.selectAll("circle")
+	 .data(dataset)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d) => {return xScale(d[0]);})
+	 .attr("cy", (d) => {return yScale(d[1]);})
+	 .attr("r", (d) => {return rScale(d[1]);})
+	 .attr("fill", "teal");
+
+     // add labels
+     svg1.selectAll("text")
+	 .data(dataset)
+	 .enter()
+	 .append("text")
+	 .attr("x", (d) => {return xScale(d[0]) + 4;})
+	 .attr("y", (d) => {return yScale(d[1]) + 4;})
+	 .text((d) => {return "(" + d[0] + ", " + d[1] + ")";});
+     
+     // add axes
+     let xAxis = d3.axisBottom()                                                 // Top here means the labels are on the bottom of the axis-line, not the whole axis is on the bottom of the plot
+		   .scale(xScale)
+		   .ticks(5);                                                    // This is a rough number of ticks, D3 will take this as reference but it may decide to use more or less ticks          
+     //		   .tickValues([0, 150, 300, 600]);                              // manually set the tick labels. Numbers exceed the range of xScale also show themselves if they can be plotted within the svg.
+     svg1.append("g")
+	 .attr("class", "axis")
+	 .attr("transform", "translate(0, " + (h1 - margin.bottom) + ")")        // makes the axis move 0px horizontally to the right and move (h1 - margin.bottom) virtically to the bottom
+ 	 .call(xAxis);
+
+     let yAxis = d3.axisLeft()
+		   .scale(yScale)
+		   .ticks(5);
+     svg1.append("g")
+	 .call(yAxis)
+	 .attr("transform", "translate(" + margin.left + ", 0)")
+	 .attr("class", "axis");
+
+     // Randomly generated dataset ------------------------------------------------
+     d3.select("body")
+       .append("h3")
+       .text("Scatter plot of randomly generated points");
+
+     // generate data
+     let datasetRandom = [];
+     let pointNum = 50;
+     let xSup = Math.random() * 1000;
+     let ySup = Math.random() * 1000;
+     for (let i = 0; i < pointNum; i++) {
+       let x = Math.floor(Math.random() * xSup);
+       let y = Math.floor(Math.random() * ySup);
+       datasetRandom.push([x, y]);
+     }
+     
+     // set the canvas
+     let w2 = 700;
+     let h2 = 400;
+
+     let svg2 = d3.select("body").append("svg");
+     svg2.attr("width", w2)
+	 .attr("height", h2)
+	 .style("display", "block");
+
+     // scale the data
+     let minXDomain2 = d3.min(datasetRandom, (d) => {return d[0]});
+     let maxXDomain2 = d3.max(datasetRandom, (d) => {return d[0]});
+     let minYDomain2 = 0 // d3.min(datasetRandom, (d) => {return d[1]});
+     let maxYDomain2 = d3.max(datasetRandom, (d) => {return d[1]});
+     
+     let xScale2 = d3.scaleLinear()
+		     .domain([minXDomain2, maxXDomain2])
+		     .range([margin.left, w2 - margin.right])
+		     .nice();                                                    // Really helps to keep the axis ticks clean
+     let yScale2 = d3.scaleLinear()
+		     .domain([minYDomain2, maxYDomain2])
+		     .range([h2 - margin.top, margin.bottom])
+		     .nice();
+     let rScale2 = d3.scaleSqrt()
+		     .domain([minYDomain2, maxYDomain2])
+		     .rangeRound([2, 7]);
+
+     // plot the scatter
+     svg2.selectAll("circle")
+	 .data(datasetRandom)
+	 .enter()
+	 .append("circle")
+	 .attr("cx", (d) => {return xScale2(d[0]);})
+	 .attr("cy", (d) => {return yScale2(d[1]);})
+	 .attr("r", (d) => {return rScale2(d[1]);})
+	 .attr("fill", "teal")
+	 .attr("opacity", 0.5);
+
+     /*     // add labels
+	svg2.selectAll("text")
+	.data(datasetRandom)
+	.enter()
+	.append("text")
+	.attr("x", (d) => {return xScale2(d[0]) + 4;})
+	.attr("y", (d) => {return yScale2(d[1]) + 4;})
+	.text((d) => {return "(" + d[0] + ", " + d[1] + ")";});
+      */   
+     // add axes
+     let xAxis2 = d3.axisBottom()                                                // Top here means the labels are on the bottom of the axis-line, not the whole axis is on the bottom of the plot
+		    .scale(xScale2)
+		    .ticks(5);                                                   // This is a rough number of ticks, D3 will take this as reference but it may decide to use more or less ticks          
+     //		   .tickValues([0, 150, 300, 600]);                              // manually set the tick labels. Numbers exceed the range of xScale also show themselves if they can be plotted within the svg.
+     svg2.append("g")
+	 .attr("class", "axis")
+	 .attr("transform", "translate(0, " + (h2 - margin.bottom) + ")")        // makes the axis move 0px horizontally to the right and move (h2 - margin.bottom) virtically to the bottom
+ 	 .call(xAxis2);
+
+     let yAxis2 = d3.axisLeft()
+		    .scale(yScale2)
+		    .ticks(5);
+     svg2.append("g")
+	 .call(yAxis2)
+	 .attr("transform", "translate(" + margin.left + ", 0)")
+	 .attr("class", "axis");
+
+     // add time scale axis -------------------------------------
+     d3.select("body")
+       .append("h3")
+       .text("Adding time scale axis");
+     
+     let parseTime = d3.timeParse("%m/%d/%y");
+
+     function dataConvertType(d) {
+       return {Date: parseTime(d.Date), Amount: parseInt(d.Amount)};
+     }
+
+     let timeFormat = d3.timeFormat("%e");
+     
+     d3.csv("time_scale_data.csv")
+       .then((data) => {
+	 // change the format of the data
+	 data = data.map(dataConvertType);
+
+	 // set the canvas
+	 let svg3 = d3.select("body").append("svg");
+	 let w3 = 700;
+	 let h3 = 400;
+	 let margin3 = {top: 20, right: 70, bottom: 20, left: 40};
+
+	 svg3.attr("width", w3)
+	     .attr("height", h3)
+	     .style("display", "block");
+
+	 // Scale Setting
+	 let startDate = d3.min(data, (d) => {return d.Date;});
+	 let endDate = d3.max(data, (d) => {return d.Date;});
+	 let startDatePadding = d3.timeDay.offset(startDate, -1);
+	 let endDatePadding = d3.timeDay.offset(endDate, 1);
+	 
+	 let minADomain = 0;                                        //d3.min(data, (d) => {return d.Amount;});
+	 let maxADomain = d3.max(data, (d) => {return d.Amount;});
+	 
+	 let xScale = d3.scaleTime()
+			.domain([startDatePadding, endDatePadding])
+			.range([margin3.left, w3 - margin3.right]);
+
+	 let yScale = d3.scaleLinear()
+			.domain([minADomain, maxADomain])
+			.range([h3 - margin3.bottom, margin3.top])
+			.nice();
+
+	 // plot the guide lines -- before the circle, so it would be beneath them
+	 svg3.selectAll("line")
+	     .data(data)
+	     .enter()
+	     .append("line")
+	     .attr("x1", (d) => {return xScale(d.Date);})
+	     .attr("x2", (d) => {return xScale(d.Date);})
+	     .attr("y1", (h3 - margin3.bottom))
+	     .attr("y2", (d) => {return yScale(d.Amount);})
+	     .attr("stroke", "#dbdbdb")
+	     .attr("stroke-dasharray", "10, 10");
+	 
+	 // plot the scatter plot
+	 svg3.selectAll("circle")
+	     .data(data)
+	     .enter()
+	     .append("circle")
+	     .attr("cx", (d) => {return xScale(d.Date)})
+	     .attr("cy", (d) => {return yScale(d.Amount)})
+	     .attr("r", 3);
+
+	 // add Axis
+	 let xAxis = d3.axisBottom()
+		       .scale(xScale)
+		       .ticks(15)
+		       .tickSizeOuter(0)
+		       .tickFormat(timeFormat);
+	 let yAxis = d3.axisLeft()
+		       .scale(yScale)
+		       .ticks(7);
+	 svg3.append("g")
+	     .call(xAxis)
+	     .attr("transform", "translate(0, " + (h3 - margin3.bottom) + ")")
+	     .attr("class", "axisTime")
+	     .attr("id", "monthAxis");
+	 svg3.append("g")
+	     .call(yAxis)
+	     .attr("transform", "translate(" + margin3.left + ", 0)")
+	     .attr("class", "axisTime");
+
+
+	 // Refine the tick labels 
+	 let labels = svg3.selectAll('#monthAxis .tick text')._groups[0];
+	 labels[0].textContent = "Jan";
+	 labels[0].setAttribute("font-weight", "bold");
+	 labels[labels.length - 1].textContent = "";
+
+	 let ticks = svg3.selectAll('#monthAxis .tick line')._groups[0];
+	 ticks[0].remove();
+	 ticks[ticks.length - 1].remove();
+       });
+    </script>
+  </body>
+</html>

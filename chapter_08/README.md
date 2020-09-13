@@ -1,3 +1,26 @@
+### Notes about d3.timeDay.offset() function
+
+Cite from [the function's Doc](https://github.com/d3/d3-time#interval_offset):  
+> interval.offset(date[, step])
+> 
+> Returns a new date equal to date plus step intervals. If step is not specified it defaults to 1. If step is negative, then the returned date will be before the specified date; if step is zero, then a copy of the specified date is returned; if step is not an integer, it is floored. This method does not round the specified date to the interval. For example, if date is today at 5:34 PM, then d3.timeDay.offset(date, 1) returns 5:34 PM tomorrow (even if daylight saving changes!).  
+
+This function will return the day (or some days or weeks or months ... unit depends on the interval's scale) before (or after) the *date*, so this could be used to set padding on the axis if any of them is time scaled.
+
+Edge Cases of this function:  
+* **Note that this function will keep the hours and minutes remain the same, just the date becomes the previous one. Even with the daylight saving change.**  
+
+  For example, starting at 2 a.m. on November 3th, 2019, Missouri started Daylight Saving Time. The clock was set a hour backward. So it switched from 1:59 back to 1:00 again. Thus there would be 25 hours between 2:20 a.m. Nov 2nd, 2020 and 2:20 a.m. Nov 3rd. However,   
+
+	  let d = new Date("11/02/19 2:20");  
+	  d3.timeDay.offset(d, 1) // will return "Sun Nov 03 2019 02:20:00 GMT-0600 (Central Standard Time)"
+	 
+ * **If the time that it means to change to does not exist -- caused by the ternimation of daylight saving change, it will return the corresponding valid time.**  
+ 
+   For example, starting at 2 a.m. on March 8th, 2020, Missouri ends Daylight Saving Time. The clock was set a hour forward. So it switched from 1:59 directly to 3:00. Thus 2:20 a.m. March 8th doesn't exist. 
+	 
+	   let d = new Date("03/09/20 2:20");
+	   d3.timeDay.offset(d, -1) // will return "Sun Mar 08 2020 03:20:00 GMT-0500 (Central Daylight Time)"
 
 ### time_scale_data.csv
 
