@@ -35,10 +35,11 @@
 		    .nice();
      let RScale = d3.scaleSqrt()
 		    .domain([minYDomain, maxYDomain])
-		    .range([0, 10])
+     //	            .range([0, 10])
+                    .rangeRound([0, 10]);                                // If we comment out .range([0, 10]) with this, it could round the radius to nearest integer -> exact how many pixels.
 		    .nice()                                              // Extends the domain so that it starts and ends on nice round values. change the domain from [0, 12.24744871391589] to [0, 13].
      // Could be verified by "RScale.domain()" in the console
-		    .rangeRound([0, 10]);                                  // round the radius to nearest integer -> exact how many pixels.
+		    
      // another useful function called scale.clamp() can cut all input that exceed the domain to the low or high bounds to avoid future bugs.
      
      svg.attr("width", w)
